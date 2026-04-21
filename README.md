@@ -1,5 +1,6 @@
 # n8n-telegram-image-bot
 # 🤖 Bot Telegram Xử Lý Ảnh Tự Động Bằng n8n
+Người thực hiện Nguyễn Ngô Tôn Thái mssv 123000558
 
 ## 📌 Giới thiệu
 
