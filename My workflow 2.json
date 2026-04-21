@@ -1,0 +1,267 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        0
+      ],
+      "id": "3e4d2f64-5c2d-46e7-8cc5-f1c5c8c3785b",
+      "name": "Telegram Trigger",
+      "webhookId": "50d6c568-1219-4021-8417-f0af6a54e1ce",
+      "credentials": {
+        "telegramApi": {
+          "id": "OYYZTbEz9jaLDM6D",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8cc4e781-19bf-44f0-ac17-c307e2e881fb",
+              "name": "prompt",
+              "value": "={{$json.message.caption}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "3e6017f6-7ab0-49c8-be2d-fa61f37d61e5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  let text = item.json.prompt || \"image\";\n\n  text = text\n    .toLowerCase()\n    .normalize(\"NFD\")\n    .replace(/[\\u0300-\\u036f]/g, \"\")\n    .replace(/\\s+/g, \"-\")\n    .replace(/[^\\w-]/g, \"\");\n\n  item.json.filename = text + \".png\";\n\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "53460e97-a439-40fa-95b0-96a85d70d213",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{$json.message.photo[$json.message.photo.length - 1].file_id}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "ebe79db0-7cb0-4cdf-a657-5f0d4e07b261",
+      "name": "Get a file",
+      "webhookId": "14addd5d-e0d0-4059-bebd-9e8fe156b6b9",
+      "credentials": {
+        "telegramApi": {
+          "id": "OYYZTbEz9jaLDM6D",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{$node[\"Code in JavaScript\"].json[\"filename\"]}}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        368,
+        0
+      ],
+      "id": "e846ba32-e887-4102-9ef8-2cb5d61b45f6",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "pGa7McEYaWZcnriM",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.remove.bg/v1.0/removebg",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "3qvygfdGJ3CEuVSHcJQhZDV4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image_file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "size",
+              "value": "auto"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        64,
+        0
+      ],
+      "id": "f8fe7fa2-c68a-4092-88b0-19f6bc4f31c9",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{$node[\"Telegram Trigger\"].json[\"message\"][\"chat\"][\"id\"]}}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        0
+      ],
+      "id": "56b5ae7a-cbfd-4485-8691-86f5fffd235d",
+      "name": "Send a photo message",
+      "webhookId": "907f4a07-4cae-4244-a18b-b2829f500bba",
+      "credentials": {
+        "telegramApi": {
+          "id": "OYYZTbEz9jaLDM6D",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "36aac6f2-8c7d-4177-b763-2916b5212d06",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1cbdda0ff35ada6e96209207afd93950eac73c95ff1b4b75623e78e60a30af33"
+  },
+  "id": "F38cG1LoQbXWlFuV",
+  "tags": []
+}
